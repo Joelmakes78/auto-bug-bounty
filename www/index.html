@@ -25,6 +25,7 @@
           <button class="nav-link active" data-view="overview"><span>◫</span> Overview</button>
           <button class="nav-link" data-view="discover"><span>⌕</span> Discover</button>
           <button class="nav-link" data-view="programs"><span>◎</span> Programs</button>
+          <button class="nav-link" data-view="projects"><span>⌘</span> Code projects</button>
           <button class="nav-link" data-view="findings"><span>⌕</span> Findings</button>
           <button class="nav-link" data-view="reports"><span>▤</span> Reports</button>
         </nav>
@@ -94,6 +95,10 @@
             <span class="reminder-icon" aria-hidden="true">✓</span>
             <div><strong>Choose a program before any testing</strong><p>Listings and scopes change. Confirm the current policy, exact authorized assets, exclusions, and safe-harbor terms on the official program page. This app does not search targets or run security tests.</p></div>
           </div>
+          <div class="eligibility-notice">
+            <strong>Review identity and payout eligibility on the official terms.</strong>
+            <p>This workspace can record what a program publicly says, but it can’t confirm “no KYC,” guarantee a payout, or bypass identity checks that a platform, sponsor, or payment provider requires. Policies and payment rules vary and change; verify them directly before participating.</p>
+          </div>
           <div class="directory-grid">
             <article class="directory-card">
               <span class="directory-mark">H</span>
@@ -116,7 +121,7 @@
               <a href="https://yeswehack.com/programs" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Browse YesWeHack <span>↗</span></a>
             </article>
           </div>
-          <div class="discovery-footer"><div><strong>Found a program?</strong><p>Add it to your workspace with its in-scope domains and testing rules.</p></div><button class="button button-primary" id="add-program-discover">＋ Add a program</button></div>
+          <div class="discovery-footer"><div><strong>Found a program?</strong><p>Add its official policy link, in-scope domains, and current eligibility notes.</p></div><button class="button button-primary" id="add-program-discover">＋ Add a program</button></div>
         </section>
 
         <section class="view" id="view-programs">
@@ -125,6 +130,15 @@
             <button class="button button-primary" id="add-program">＋ Add a program</button>
           </div>
           <div id="all-programs" class="program-grid"></div>
+        </section>
+
+        <section class="view" id="view-projects">
+          <div class="page-heading compact-heading">
+            <div><p class="eyebrow">YOUR BUILD WORKSPACE</p><h1>Coding projects</h1><p class="subheading">Break an idea into next steps and create a useful brief for a coding assistant.</p></div>
+            <button class="button button-primary" id="add-project">＋ New project</button>
+          </div>
+          <div class="project-privacy-note"><span class="privacy-icon" aria-hidden="true">✓</span><p><strong>Private by design.</strong> Project notes are stored in this browser. A generated brief only leaves this device if you choose to copy or share it.</p></div>
+          <div id="all-projects" class="project-grid"></div>
         </section>
 
         <section class="view" id="view-findings">
@@ -156,10 +170,25 @@
         <div class="dialog-heading"><div><p class="eyebrow">SCOPE BEFORE ACTION</p><h2>Add a program</h2></div><button type="button" class="icon-button" data-close="program-dialog" aria-label="Close">×</button></div>
         <label>Program name<input name="name" maxlength="80" required placeholder="e.g. Example Security Program"></label>
         <label>Platform or source <span class="optional">OPTIONAL</span><input name="platform" maxlength="80" placeholder="e.g. HackerOne, Bugcrowd, private program"></label>
+        <label>Official program or policy URL <span class="field-help">Optional. Use the official program page or its eligibility/payout policy.</span><input name="policyUrl" type="url" inputmode="url" placeholder="https://…"></label>
+        <label>Identity and payout terms <select name="eligibility"><option>Not reviewed</option><option>Program terms list verification requirements</option><option>No program-level verification requirement listed</option></select><span class="field-help">Record only what the current official terms explicitly state. This does not predict sponsor or payment-provider checks.</span></label>
+        <label>Eligibility review notes <span class="optional">OPTIONAL</span><textarea name="eligibilityNotes" rows="2" maxlength="700" placeholder="What do the current official terms say? Add the review date and any payout caveats."></textarea></label>
         <label>Authorized domains <span class="field-help">One domain per line. Use *.example.com for subdomains only.</span><textarea name="scope" rows="4" required placeholder="example.com&#10;*.example.org"></textarea></label>
         <label>Rules and notes <span class="optional">OPTIONAL</span><textarea name="rules" rows="3" maxlength="1000" placeholder="Testing limits, exclusions, safe harbor, disclosure rules…"></textarea></label>
         <p class="form-error" id="program-error" role="alert"></p>
         <div class="dialog-actions"><button type="button" class="button button-secondary" data-close="program-dialog">Cancel</button><button type="submit" class="button button-primary">Save program</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="project-dialog" class="app-dialog">
+      <form id="project-form">
+        <div class="dialog-heading"><div><p class="eyebrow">PLAN YOUR NEXT BUILD</p><h2>New coding project</h2></div><button type="button" class="icon-button" data-close="project-dialog" aria-label="Close">×</button></div>
+        <label>Project name<input name="name" maxlength="80" required placeholder="e.g. Personal finance tracker"></label>
+        <label>Language or stack <span class="optional">OPTIONAL</span><input name="stack" maxlength="100" placeholder="e.g. TypeScript, React, PostgreSQL"></label>
+        <label>What are you building?<textarea name="goal" rows="3" maxlength="1000" required placeholder="Describe the goal and who it helps."></textarea></label>
+        <label>Context, constraints, or current progress <span class="optional">OPTIONAL</span><textarea name="notes" rows="3" maxlength="1500" placeholder="Existing code, requirements, errors, design choices…"></textarea></label>
+        <p class="form-error" id="project-error" role="alert"></p>
+        <div class="dialog-actions"><button type="button" class="button button-secondary" data-close="project-dialog">Cancel</button><button type="submit" class="button button-primary">Create project</button></div>
       </form>
     </dialog>
 

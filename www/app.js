@@ -1,5 +1,5 @@
 const STORAGE_KEY = "scopesafe.workspace.v1";
-const emptyState = () => ({ programs: [], findings: [] });
+const emptyState = () => ({ programs: [], findings: [], projects: [] });
 
 let state = emptyState();
 let selectedReportId = null;
@@ -23,7 +23,7 @@ function loadState() {
     if (!parsed || !Array.isArray(parsed.programs) || !Array.isArray(parsed.findings)) {
       throw new Error("The saved workspace has an invalid format.");
     }
-    state = parsed;
+    state = { ...parsed, projects: Array.isArray(parsed.projects) ? parsed.projects : [] };
   } catch (error) {
     state = emptyState();
     showNotice(`Saved workspace could not be loaded: ${error.message} Your current session is temporary.`);
@@ -47,6 +47,15 @@ function escapeHTML(value = "") {
 
 function safeText(value = "") {
   return escapeHTML(value);
+}
+
+function safeHttpsUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.href : null;
+  } catch {
+    return null;
+  }
 }
 
 function shortDate(value) {
@@ -106,8 +115,54 @@ function renderPrograms() {
       <div class="program-card-top"><span class="program-icon">${safeText(initials(program.name))}</span><span class="row-main"><strong>${safeText(program.name)}</strong><small>${safeText(program.platform || "Private program")}</small></span></div>
       <div class="scope-list">${program.scope.map((domain) => `<span class="scope-chip">${safeText(domain)}</span>`).join("")}</div>
       ${program.rules ? `<div class="rules-note">${safeText(program.rules)}</div>` : `<div class="rules-note">No additional rules recorded.</div>`}
+      <div class="eligibility-card"><span class="eligibility-status">${safeText(program.eligibility || "Not reviewed")}</span>${safeHttpsUrl(program.policyUrl || "") ? `<a href="${safeText(safeHttpsUrl(program.policyUrl))}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Official terms ↗</a>` : ""}${program.eligibilityNotes ? `<p>${safeText(program.eligibilityNotes)}</p>` : ""}</div>
       <div class="card-footer"><span>${state.findings.filter((finding) => finding.programId === program.id).length} findings · Added ${shortDate(program.createdAt)}</span><button class="small-link" data-delete-program="${safeText(program.id)}">Remove</button></div>
     </article>`).join("") : emptyMessage("Start with an authorized program", "Add its exact domains and any testing rules so your work stays within scope.");
+}
+
+function projectBrief(project) {
+  const steps = project.tasks.map((task) => `- [${task.done ? "x" : " "}] ${task.text}`).join("\n");
+  return `# Coding project: ${project.name}
+
+## Stack
+${project.stack || "Not specified"}
+
+## Goal
+${project.goal}
+
+## Context and constraints
+${project.notes || "No additional context provided."}
+
+## Next steps
+${steps || "- Break this goal into small, testable implementation steps."}
+
+Please help me implement one next step at a time. Ask for the relevant files or missing requirements, preserve existing behavior, and include appropriate tests.`;
+}
+
+function renderProjects() {
+  $("#all-projects").innerHTML = state.projects.length ? state.projects.map((project) => {
+    const tasks = Array.isArray(project.tasks) ? project.tasks : [];
+    const doneCount = tasks.filter((task) => task.done).length;
+    return `<article class="project-card">
+      <div class="project-card-header">
+        <div><p class="eyebrow">${safeText(project.stack || "CODING PROJECT")}</p><h2>${safeText(project.name)}</h2></div>
+        <button class="small-link" data-delete-project="${safeText(project.id)}">Remove</button>
+      </div>
+      <p class="project-goal">${safeText(project.goal)}</p>
+      ${project.notes ? `<div class="project-notes">${safeText(project.notes)}</div>` : ""}
+      <div class="project-tasks-heading"><strong>Next steps</strong><span>${doneCount}/${tasks.length} done</span></div>
+      <div class="project-tasks">${tasks.length ? tasks.map((task) => `<div class="project-task ${task.done ? "done" : ""}">
+        <button type="button" class="task-toggle" data-toggle-task="${safeText(project.id)}" data-task-id="${safeText(task.id)}" aria-label="${task.done ? "Mark incomplete" : "Mark complete"}">${task.done ? "✓" : ""}</button>
+        <span>${safeText(task.text)}</span>
+        <button type="button" class="task-remove" data-remove-task="${safeText(project.id)}" data-task-id="${safeText(task.id)}" aria-label="Remove task">×</button>
+      </div>`).join("") : `<p class="project-no-tasks">Add a small, testable next step to get started.</p>`}</div>
+      <form class="task-form" data-task-form="${safeText(project.id)}">
+        <input name="task" maxlength="160" required aria-label="New project task" placeholder="Add a next step…">
+        <button class="button button-secondary button-small" type="submit">Add</button>
+      </form>
+      <div class="project-actions"><button type="button" class="button button-secondary button-small" data-copy-brief="${safeText(project.id)}">Copy coding brief</button><button type="button" class="text-button" data-download-brief="${safeText(project.id)}">Download .md</button></div>
+    </article>`;
+  }).join("") : emptyMessage("No coding projects yet", "Add a project to break the work into manageable steps and create a coding brief.");
 }
 
 function renderFindings() {
@@ -175,6 +230,7 @@ function renderReports() {
 function render() {
   renderOverview();
   renderPrograms();
+  renderProjects();
   renderFindings();
   renderReports();
 }
@@ -182,7 +238,7 @@ function render() {
 function navigate(view) {
   $$(".view").forEach((section) => section.classList.toggle("active", section.id === `view-${view}`));
   $$(".nav-link").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
-  const title = { overview: "Overview", discover: "Discover", programs: "Programs", findings: "Findings", reports: "Reports" }[view] || "Overview";
+  const title = { overview: "Overview", discover: "Discover", programs: "Programs", projects: "Code projects", findings: "Findings", reports: "Reports" }[view] || "Overview";
   $("#page-title").textContent = title;
 }
 
@@ -237,6 +293,10 @@ $$("[data-go]").forEach((button) => button.addEventListener("click", () => navig
 $("#add-program").addEventListener("click", () => $("#program-dialog").showModal());
 $("#add-program-overview").addEventListener("click", () => $("#program-dialog").showModal());
 $("#add-program-discover").addEventListener("click", () => $("#program-dialog").showModal());
+$("#add-project").addEventListener("click", () => {
+  $("#project-error").textContent = "";
+  $("#project-dialog").showModal();
+});
 $("#quick-add").addEventListener("click", openFindingDialog);
 $("#add-finding").addEventListener("click", openFindingDialog);
 $("#install-app").addEventListener("click", async () => {
@@ -254,6 +314,12 @@ $$("[data-close]").forEach((button) => button.addEventListener("click", () => $(
 $("#program-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const form = new FormData(event.currentTarget);
+  const policyUrlInput = String(form.get("policyUrl")).trim();
+  const policyUrl = policyUrlInput ? safeHttpsUrl(policyUrlInput) : "";
+  if (policyUrlInput && !policyUrl) {
+    $("#program-error").textContent = "Enter a valid HTTPS link to the official program or policy page.";
+    return;
+  }
   const scope = String(form.get("scope")).split(/\r?\n/).map((value) => value.trim().toLowerCase()).filter(Boolean);
   if (!scope.length) {
     $("#program-error").textContent = "Add at least one authorized domain to define the program’s scope.";
@@ -268,6 +334,9 @@ $("#program-form").addEventListener("submit", (event) => {
     id: id(),
     name: String(form.get("name")).trim(),
     platform: String(form.get("platform")).trim(),
+    policyUrl,
+    eligibility: String(form.get("eligibility")),
+    eligibilityNotes: String(form.get("eligibilityNotes")).trim(),
     scope: [...new Set(scope)],
     rules: String(form.get("rules")).trim(),
     createdAt: new Date().toISOString()
@@ -277,6 +346,26 @@ $("#program-form").addEventListener("submit", (event) => {
   event.currentTarget.reset();
   $("#program-dialog").close();
   notify("Program saved. Stay within its documented scope.");
+});
+
+$("#project-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  state.projects.push({
+    id: id(),
+    name: String(form.get("name")).trim(),
+    stack: String(form.get("stack")).trim(),
+    goal: String(form.get("goal")).trim(),
+    notes: String(form.get("notes")).trim(),
+    tasks: [],
+    createdAt: new Date().toISOString()
+  });
+  saveState();
+  render();
+  event.currentTarget.reset();
+  $("#project-dialog").close();
+  navigate("projects");
+  notify("Coding project saved on this device.");
 });
 
 $("#finding-form").addEventListener("submit", (event) => {
@@ -309,6 +398,57 @@ $("#finding-form").addEventListener("submit", (event) => {
 });
 
 $("#finding-search").addEventListener("input", renderFindings);
+$("#all-projects").addEventListener("submit", (event) => {
+  const form = event.target.closest("[data-task-form]");
+  if (!form) return;
+  event.preventDefault();
+  const project = state.projects.find((item) => item.id === form.dataset.taskForm);
+  const text = String(new FormData(form).get("task")).trim();
+  if (!project || !text) return;
+  if (!Array.isArray(project.tasks)) project.tasks = [];
+  project.tasks.push({ id: id(), text, done: false });
+  saveState();
+  render();
+});
+$("#all-projects").addEventListener("click", async (event) => {
+  const target = event.target.closest("button");
+  if (!target) return;
+  const project = state.projects.find((item) => item.id === (target.dataset.deleteProject || target.dataset.toggleTask || target.dataset.removeTask || target.dataset.copyBrief || target.dataset.downloadBrief));
+  if (!project) return;
+
+  if (target.dataset.deleteProject) {
+    if (!confirm(`Remove coding project “${project.name}”?`)) return;
+    state.projects = state.projects.filter((item) => item.id !== project.id);
+    saveState();
+    render();
+    notify("Coding project removed.");
+    return;
+  }
+
+  if (target.dataset.toggleTask || target.dataset.removeTask) {
+    const taskIndex = project.tasks.findIndex((task) => task.id === target.dataset.taskId);
+    if (taskIndex === -1) return;
+    if (target.dataset.toggleTask) project.tasks[taskIndex].done = !project.tasks[taskIndex].done;
+    else project.tasks.splice(taskIndex, 1);
+    saveState();
+    render();
+    return;
+  }
+
+  if (target.dataset.copyBrief) {
+    try {
+      await navigator.clipboard.writeText(projectBrief(project));
+      notify("Coding brief copied. Paste it into your coding assistant.");
+    } catch (error) {
+      notify(`Could not copy the brief: ${error.message}`);
+    }
+    return;
+  }
+
+  if (target.dataset.downloadBrief) {
+    downloadText(projectBrief(project), `${project.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "coding-project"}-brief.md`, "text/markdown;charset=utf-8");
+  }
+});
 $("#all-programs").addEventListener("click", (event) => {
   const button = event.target.closest("[data-delete-program]");
   if (!button) return;
@@ -338,14 +478,18 @@ $("#report-list").addEventListener("click", (event) => {
 $("#download-report").addEventListener("click", () => {
   const finding = state.findings.find((item) => item.id === selectedReportId);
   if (!finding) return;
-  const blob = new Blob([reportMarkdown(finding)], { type: "text/markdown;charset=utf-8" });
+  downloadText(reportMarkdown(finding), `${finding.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "finding-report"}.md`, "text/markdown;charset=utf-8");
+});
+
+function downloadText(contents, filename, type) {
+  const blob = new Blob([contents], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${finding.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "finding-report"}.md`;
+  link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
-});
+}
 
 loadState();
 render();

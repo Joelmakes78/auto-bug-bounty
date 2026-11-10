@@ -25,4 +25,6 @@ The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Data storage
 
-The website and Android app store workspace data locally on the current browser or device. There is no account, server-side storage, or cross-device synchronization.
+The website and Android app store programs, eligibility notes, findings, and coding projects locally on the current browser or device. There is no account, server-side storage, or cross-device synchronization. Identity and payout notes are reminders based on terms you review, not a guarantee of eligibility or payment; never try to bypass a platform's verification requirements.
+
+Coding projects can be organized into tasks. The app can copy or download a project brief to share with a coding assistant; it does not include a hosted AI service, and notes are only shared if you choose to copy or send them.

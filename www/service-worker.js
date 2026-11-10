@@ -1,4 +1,4 @@
-const CACHE_NAME = "scopesafe-shell-v3";
+const CACHE_NAME = "scopesafe-shell-v4";
 const APP_SHELL = ["", "index.html", "styles.css", "app.js", "manifest.webmanifest", "app-icon.svg"]
   .map((path) => new URL(path, self.registration.scope).href);
 
