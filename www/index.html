@@ -99,6 +99,15 @@
             <strong>Review identity and payout eligibility on the official terms.</strong>
             <p>This workspace can record what a program publicly says, but it can’t confirm “no KYC,” guarantee a payout, or bypass identity checks that a platform, sponsor, or payment provider requires. Policies and payment rules vary and change; verify them directly before participating.</p>
           </div>
+          <form id="program-search-form" class="program-search panel">
+            <div class="program-search-copy"><p class="eyebrow">PUBLIC LISTING SEARCH</p><h2>Search by company or technology</h2><p class="muted">Opens a web search limited to public pages from the selected platform. Verify each result and its current eligibility, identity, and payout terms on the official page.</p></div>
+            <div class="program-search-controls">
+              <label>Platform<select name="platform"><option value="hackerone.com">HackerOne</option><option value="bugcrowd.com">Bugcrowd</option><option value="intigriti.com">Intigriti</option><option value="yeswehack.com">YesWeHack</option></select></label>
+              <label>Company, product, or technology<input name="query" maxlength="80" required placeholder="e.g. Android apps, cloud storage"></label>
+              <button class="button button-primary" type="submit">Find public listings ↗</button>
+            </div>
+            <div id="program-search-result" class="program-search-result" role="status" hidden></div>
+          </form>
           <div class="directory-grid">
             <article class="directory-card">
               <span class="directory-mark">H</span>

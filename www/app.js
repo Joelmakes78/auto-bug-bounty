@@ -297,6 +297,18 @@ $("#add-project").addEventListener("click", () => {
   $("#project-error").textContent = "";
   $("#project-dialog").showModal();
 });
+$("#program-search-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  const allowedDomains = new Set(["hackerone.com", "bugcrowd.com", "intigriti.com", "yeswehack.com"]);
+  const domain = String(form.get("platform"));
+  const query = String(form.get("query")).trim();
+  if (!allowedDomains.has(domain) || !query) return;
+  const url = new URL("https://www.google.com/search");
+  url.searchParams.set("q", `site:${domain} "bug bounty" ${query}`);
+  $("#program-search-result").innerHTML = `Search generated for <strong>${safeText(query)}</strong>. <a href="${safeText(url.href)}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Open public search results ↗</a>`;
+  $("#program-search-result").hidden = false;
+});
 $("#quick-add").addEventListener("click", openFindingDialog);
 $("#add-finding").addEventListener("click", openFindingDialog);
 $("#install-app").addEventListener("click", async () => {
