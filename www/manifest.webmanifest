@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "ScopeSafe — Bug Bounty Workspace",
+  "short_name": "ScopeSafe",
+  "description": "A private, offline workspace for organizing authorized bug bounty research.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101713",
+  "theme_color": "#101713",
+  "icons": [
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "appId": "dev.scopesafe.workspace",
+  "appName": "ScopeSafe",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
