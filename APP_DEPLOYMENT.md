@@ -25,6 +25,8 @@ The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Data storage
 
-The website and Android app store programs, eligibility notes, findings, and coding projects locally on the current browser or device. Public-listing search opens an external search engine; it does not crawl targets or verify eligibility. There is no account, server-side storage, or cross-device synchronization. Identity and payout notes are reminders based on terms you review, not a guarantee of eligibility or payment; never try to bypass a platform's verification requirements.
+The website and Android app store programs, eligibility notes, findings, and coding projects locally on the current browser or device. Public-listing search opens an external search engine; it does not crawl targets or verify eligibility. ScopeSafe has no account, app backend, or cross-device synchronization. Identity and payout notes are reminders based on terms you review, not a guarantee of eligibility or payment; never try to bypass a platform's verification requirements.
 
-Coding projects can be organized into tasks. The app can copy or download a project brief to share with a coding assistant; it does not include a hosted AI service, and notes are only shared if you choose to copy or send them.
+Coding projects can be organized into tasks. The app can copy or download a project brief to share with a coding assistant.
+
+The optional AI assistant calls Google's Gemini API directly from the browser after the user activates their own API key and submits a message. Submitted messages and the in-memory conversation context are sent to Google; Google’s terms, privacy practices, usage limits, and billing apply. ScopeSafe does not save the key or AI conversation to local storage, and clearing the chat clears both from the current page. Closing or reloading the page also clears them. Do not enter secrets, private source code, or personal data. For cybersecurity, use only authorized, defensive work; the assistant does not scan or act on targets.

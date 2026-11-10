@@ -208,3 +208,28 @@ h2{font:600 17px var(--display);letter-spacing:-.4px;margin:0}
 @media(max-width:1050px){.main-content{padding-left:28px;padding-right:28px}.sidebar{width:210px}.main-content{margin-left:210px}.stats-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.sidebar{position:static;width:auto;height:auto;padding:13px 15px;border-right:0;border-bottom:1px solid var(--line);display:block}.brand{padding:0}.side-label,.sidebar-bottom{display:none}.nav-list{display:flex;overflow:auto;gap:4px;margin-top:14px}.nav-link{height:36px;padding:0 10px;white-space:nowrap;font-size:11px}.nav-link span{font-size:14px}.main-content{margin:0;padding:0 17px 40px}.topbar{height:56px;margin-bottom:25px}.topbar-right{gap:10px}.local-badge{font-size:8px}.page-heading{align-items:flex-start;flex-direction:column;margin-bottom:21px;gap:15px}.page-heading h1{font-size:30px}.scope-reminder{align-items:flex-start;padding:12px}.reminder-tag{display:none}.content-grid,.program-grid,.report-layout,.directory-grid,.project-grid{grid-template-columns:1fr}.discovery-notice{align-items:flex-start;padding:12px}.discovery-footer{align-items:flex-start;flex-direction:column}.program-search-controls{grid-template-columns:1fr}.program-search-controls .button{width:100%}.stats-grid{gap:9px}.stat-card{padding:12px}.stat-card>strong{font-size:24px}.stat-top{font-size:10px}.stat-card>small{font-size:9px}.panel{padding:16px}.table-toolbar{align-items:flex-start;flex-direction:column}.search-box,.search-box input{width:100%}.compact-heading{padding-top:2px}.toast{left:15px;right:15px;bottom:15px;text-align:center}}
 @media(max-width:760px){.topbar-right{gap:6px}.local-badge,.topbar #install-app{display:none}.topbar-right .button{padding:8px;font-size:10px}.topbar-right #download-apk{white-space:nowrap}}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.assistant-privacy{margin:0 0 16px;padding:14px 16px;border:1px solid #55462d;border-radius:7px;background:#251f16;color:#f2d5a6;font-size:11px;line-height:1.6}
+.assistant-privacy strong{display:block;color:#ffe0a6;margin-bottom:5px}
+.assistant-privacy p{margin:0;color:#c5b28f}
+.assistant-key{margin-bottom:16px}
+.assistant-key>label{display:grid;gap:6px;color:#c5d0c7;font-size:11px;font-weight:600}
+.assistant-key-controls{display:flex;gap:9px;margin-top:8px}
+.assistant-key-controls input,.assistant-compose textarea{min-width:0;width:100%;border:1px solid #39483e;border-radius:5px;background:#111813;color:var(--text);padding:11px;font-size:12px}
+.assistant-key-controls input:focus,.assistant-compose textarea:focus{outline:1px solid #83bd68}
+.assistant-key-status{margin:8px 0 0;color:#91a197;font-size:10px}
+.assistant-chat{padding:20px}
+.assistant-chat .panel-heading{margin-bottom:14px}
+.assistant-chat .panel-heading h2{margin-bottom:0;font-size:17px}
+.assistant-messages{display:flex;flex-direction:column;gap:12px;min-height:180px;max-height:52vh;overflow-y:auto;padding:14px;border:1px solid var(--line);border-radius:7px;background:#111813}
+.assistant-empty{margin:auto;color:#89968c;font-size:11px;text-align:center;line-height:1.6}
+.assistant-message{max-width:min(90%,720px);padding:10px 12px;border:1px solid #2c3b30;border-radius:7px;background:#19231b}
+.assistant-message-user{align-self:flex-end;background:#203323;border-color:#354c35}
+.assistant-message strong{display:block;margin-bottom:5px;color:var(--green);font-size:10px}
+.assistant-message p{margin:0;color:#dce7de;font-size:12px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.assistant-error{margin:10px 0 0;color:#ffaaaa;font-size:11px;line-height:1.5}
+.assistant-compose{display:grid;gap:9px;margin-top:12px}
+.assistant-compose textarea{resize:vertical;min-height:70px;line-height:1.5}
+.assistant-compose-footer{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.assistant-compose-footer span{color:#829087;font-size:10px}
+@media(max-width:760px){.assistant-key-controls{align-items:stretch;flex-direction:column}.assistant-key-controls .button{width:100%}.assistant-compose-footer{align-items:flex-start;flex-direction:column}.assistant-compose-footer .button{width:100%}.assistant-messages{max-height:55vh}}

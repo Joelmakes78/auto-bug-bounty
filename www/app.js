@@ -1,10 +1,17 @@
 const STORAGE_KEY = "scopesafe.workspace.v1";
+const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GEMINI_SYSTEM_INSTRUCTION = "You are a helpful general-purpose assistant. Help with everyday questions and coding projects. For cybersecurity topics, provide learning and defensive guidance for systems the user owns or is explicitly authorized to assess. Do not assist with unauthorized access, target discovery, scanning, exploitation, credential theft, evasion, or destructive actions. Keep responses clear and practical.";
+const MAX_ASSISTANT_HISTORY_ITEMS = 20;
 const emptyState = () => ({ programs: [], findings: [], projects: [] });
 
 let state = emptyState();
 let selectedReportId = null;
 let toastTimer;
 let installPrompt = null;
+let geminiApiKey = "";
+let assistantHistory = [];
+let assistantRequestInFlight = false;
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -238,7 +245,7 @@ function render() {
 function navigate(view) {
   $$(".view").forEach((section) => section.classList.toggle("active", section.id === `view-${view}`));
   $$(".nav-link").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
-  const title = { overview: "Overview", discover: "Discover", programs: "Programs", projects: "Code projects", findings: "Findings", reports: "Reports" }[view] || "Overview";
+  const title = { overview: "Overview", discover: "Discover", programs: "Programs", projects: "Code projects", assistant: "AI assistant", findings: "Findings", reports: "Reports" }[view] || "Overview";
   $("#page-title").textContent = title;
 }
 
@@ -311,6 +318,95 @@ $("#program-search-form").addEventListener("submit", (event) => {
 });
 $("#quick-add").addEventListener("click", openFindingDialog);
 $("#add-finding").addEventListener("click", openFindingDialog);
+$("#assistant-key-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const key = String(new FormData(event.currentTarget).get("apiKey")).trim();
+  if (!key) return;
+  geminiApiKey = key;
+  $("#assistant-key-status").textContent = "API key active in this page’s memory. Google may apply API usage limits or billing.";
+  $("#assistant-error").hidden = true;
+});
+$("#assistant-chat-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (assistantRequestInFlight) return;
+  const input = $("#assistant-input");
+  const message = input.value.trim();
+  if (!message) return;
+  if (!geminiApiKey) {
+    $("#assistant-error").textContent = "Add and activate your Gemini API key before sending a message.";
+    $("#assistant-error").hidden = false;
+    $("#assistant-api-key").focus();
+    return;
+  }
+
+  assistantRequestInFlight = true;
+  $("#assistant-send").disabled = true;
+  $("#assistant-error").hidden = true;
+  const messages = $("#assistant-messages");
+  messages.querySelector(".assistant-empty")?.remove();
+  appendAssistantMessage("user", message);
+  const pending = appendAssistantMessage("model", "Thinking…");
+
+  try {
+    const response = await fetch(GEMINI_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }] },
+        contents: [...assistantHistory.slice(-MAX_ASSISTANT_HISTORY_ITEMS), { role: "user", parts: [{ text: message }] }],
+        generationConfig: { maxOutputTokens: 2048 }
+      })
+    });
+    const result = await response.json().catch(() => null);
+    if (!response.ok) {
+      const detail = result?.error?.message || `Google returned HTTP ${response.status}.`;
+      throw new Error(detail);
+    }
+
+    const answer = result?.candidates?.[0]?.content?.parts
+      ?.map((part) => typeof part.text === "string" ? part.text : "")
+      .filter(Boolean)
+      .join("\n")
+      .trim();
+    if (!answer) {
+      const reason = result?.promptFeedback?.blockReason || result?.candidates?.[0]?.finishReason;
+      throw new Error(reason ? `Gemini did not return a text answer (${reason}).` : "Gemini returned an empty response.");
+    }
+
+    pending.textContent = answer;
+    assistantHistory.push(
+      { role: "user", parts: [{ text: message }] },
+      { role: "model", parts: [{ text: answer }] }
+    );
+    assistantHistory = assistantHistory.slice(-MAX_ASSISTANT_HISTORY_ITEMS);
+    input.value = "";
+    messages.scrollTop = messages.scrollHeight;
+  } catch (error) {
+    pending.remove();
+    $("#assistant-error").textContent = `Could not get a reply: ${error.message}`;
+    $("#assistant-error").hidden = false;
+    input.focus();
+  } finally {
+    assistantRequestInFlight = false;
+    $("#assistant-send").disabled = false;
+  }
+});
+$("#assistant-clear").addEventListener("click", () => {
+  if (assistantRequestInFlight) {
+    notify("Wait for the current reply before clearing the chat.");
+    return;
+  }
+  geminiApiKey = "";
+  assistantHistory = [];
+  $("#assistant-api-key").value = "";
+  $("#assistant-key-status").textContent = "No API key is active.";
+  $("#assistant-messages").replaceChildren(Object.assign(document.createElement("div"), {
+    className: "assistant-empty",
+    textContent: "Your conversation will appear here. It stays in memory only until you clear it or close this page."
+  }));
+  $("#assistant-error").hidden = true;
+  notify("Chat and API key cleared from this page.");
+});
 $("#install-app").addEventListener("click", async () => {
   if (!installPrompt) {
     notify("Use your browser’s menu and choose “Install app” or “Add to Home Screen”.");
@@ -321,6 +417,19 @@ $("#install-app").addEventListener("click", async () => {
   if (outcome === "accepted") notify("ScopeSafe is being installed.");
   installPrompt = null;
 });
+
+function appendAssistantMessage(role, text) {
+  const message = document.createElement("article");
+  message.className = `assistant-message assistant-message-${role}`;
+  const label = document.createElement("strong");
+  label.textContent = role === "user" ? "You" : "Gemini";
+  const content = document.createElement("p");
+  content.textContent = text;
+  message.append(label, content);
+  $("#assistant-messages").append(message);
+  message.scrollIntoView({ block: "nearest" });
+  return content;
+}
 $$("[data-close]").forEach((button) => button.addEventListener("click", () => $(`#${button.dataset.close}`).close()));
 
 $("#program-form").addEventListener("submit", (event) => {
